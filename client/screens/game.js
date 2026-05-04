@@ -26,15 +26,13 @@ export function initGame() {
     showScreen('game');
   });
 
-  // ── Player Progress ──────────────────────────────────────────────────────
-  state.socket.on('player-progress', (data) => {
-    updateSolvedCount();
-  });
-
-  state.socket.on('player-solved', (data) => {
-    solvedCount++;
+  // ── Live Leaderboard ─────────────────────────────────────────────────────
+  state.socket.on('live-leaderboard-update', (leaderboardData) => {
+    renderLiveLeaderboard(leaderboardData);
+    
+    // Update solved count from leaderboard data
+    solvedCount = leaderboardData.filter(p => p.solved).length;
     document.getElementById('solved-count').textContent = solvedCount;
-    addFeedItem(`${data.avatar} ${data.nickname} solved in ${data.guessCount}!`, true);
   });
 
   // ── Round End ────────────────────────────────────────────────────────────
@@ -92,7 +90,7 @@ function resetGameState() {
   buildGrid();
   resetKeyboard();
   document.getElementById('solved-count').textContent = '0';
-  document.getElementById('feed-list').innerHTML = '';
+  document.getElementById('live-leaderboard-list').innerHTML = '';
 }
 
 function setupKeyboard() {
@@ -251,23 +249,24 @@ function stopTimer() {
   }
 }
 
-function updateSolvedCount() {
-  state.socket.emit('get-round-status', (status) => {
-    if (status && status.players) {
-      solvedCount = status.players.filter(p => p.solved).length;
-      totalPlayers = status.players.length;
-      document.getElementById('solved-count').textContent = solvedCount;
-      document.getElementById('total-players').textContent = totalPlayers;
-    }
+function renderLiveLeaderboard(entries) {
+  const lbList = document.getElementById('live-leaderboard-list');
+  lbList.innerHTML = '';
+  
+  entries.forEach(entry => {
+    const isMe = entry.playerId === state.socket.id;
+    const item = document.createElement('div');
+    item.className = `lb-item ${isMe ? 'is-me' : ''} ${entry.solved ? 'solved' : ''}`;
+    
+    item.innerHTML = `
+      <div class="lb-left">
+        <span class="lb-rank">${entry.rank}</span>
+        <span class="lb-avatar">${entry.avatar}</span>
+        <span class="lb-name" title="${entry.nickname}">${entry.nickname}</span>
+      </div>
+      <div class="lb-score">${entry.liveScore}</div>
+    `;
+    
+    lbList.appendChild(item);
   });
-}
-
-function addFeedItem(text, isSolved = false) {
-  const feedList = document.getElementById('feed-list');
-  const item = document.createElement('div');
-  item.className = `feed-item${isSolved ? ' solved' : ''}`;
-  item.textContent = text;
-  feedList.insertBefore(item, feedList.firstChild);
-  // Keep max 20 items
-  while (feedList.children.length > 20) feedList.lastChild.remove();
 }

@@ -200,6 +200,67 @@ export class RoundManager {
     };
   }
 
+  /** Calculate exact live scores for all players mid-round */
+  getLiveLeaderboard(room) {
+    const entries = [];
+
+    for (const [playerId, player] of room.players) {
+      // 1. Get accumulated score from all PREVIOUS rounds
+      const previousTotal = player.scores.reduce((sum, s) => sum + s.total, 0);
+
+      // 2. Calculate CURRENT round live score
+      let currentRoundScore = 0;
+      let maxGreen = 0;
+      let maxYellow = 0;
+
+      if (player.solved) {
+        const guessCount = player.currentGuesses.length;
+        const timeRemainingMs = room.roundEndTime - player.solvedAt;
+        const scoreObj = ScoringEngine.calculateRoundScore(guessCount, timeRemainingMs, 5, 0);
+        currentRoundScore = scoreObj.total;
+      } else if (player.currentGuesses.length > 0) {
+        const bestStates = [0, 0, 0, 0, 0];
+        for (const guess of player.currentGuesses) {
+          for (let i = 0; i < 5; i++) {
+            if (guess.result[i] === 'correct') {
+              bestStates[i] = 2;
+            } else if (guess.result[i] === 'present' && bestStates[i] < 1) {
+              bestStates[i] = 1;
+            }
+          }
+        }
+        maxGreen = bestStates.filter(s => s === 2).length;
+        maxYellow = bestStates.filter(s => s === 1).length;
+        
+        // guessCount = 0 so no base/speed points, just letterBonus
+        const scoreObj = ScoringEngine.calculateRoundScore(0, 0, maxGreen, maxYellow);
+        currentRoundScore = scoreObj.total;
+      }
+
+      entries.push({
+        playerId,
+        nickname: player.nickname,
+        avatar: player.avatar,
+        liveScore: previousTotal + currentRoundScore,
+        solved: player.solved,
+        guessCount: player.currentGuesses.length
+      });
+    }
+
+    // Sort by live score desc, then alphabetically
+    entries.sort((a, b) => {
+      if (b.liveScore !== a.liveScore) return b.liveScore - a.liveScore;
+      return a.nickname.localeCompare(b.nickname);
+    });
+
+    // Assign live ranks
+    entries.forEach((entry, idx) => {
+      entry.rank = idx + 1;
+    });
+
+    return entries;
+  }
+
   clearTimer(roomCode) {
     const existing = this.timers.get(roomCode);
     if (existing) {

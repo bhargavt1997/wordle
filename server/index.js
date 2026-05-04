@@ -150,13 +150,9 @@ io.on('connection', (socket) => {
         guessNumber: result.guessNumber
       });
 
-      // Broadcast that a player made a guess (without revealing the guess)
-      socket.to(roomCode).emit('player-progress', {
-        playerId: socket.id,
-        nickname: socket.data.nickname,
-        guessCount: result.guessNumber,
-        solved: result.solved
-      });
+      // Broadcast live leaderboard to everyone
+      const liveLeaderboard = roundManager.getLiveLeaderboard(room);
+      io.to(roomCode).emit('live-leaderboard-update', liveLeaderboard);
 
       // If solved, broadcast celebration
       if (result.solved) {
@@ -244,6 +240,10 @@ function startNewRound(roomCode) {
     duration: roundInfo.duration,
     wordLength: 5
   });
+
+  // Broadcast initial live leaderboard (everyone at 0 for this round)
+  const initialLeaderboard = roundManager.getLiveLeaderboard(room);
+  io.to(roomCode).emit('live-leaderboard-update', initialLeaderboard);
 
   console.log(`🎮 Round ${roundInfo.roundNumber}/${roundInfo.totalRounds} started in room ${roomCode} (word: ${room.currentWord})`);
 }
