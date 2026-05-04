@@ -5,9 +5,9 @@ import { initResults } from './screens/results.js';
 import { io } from 'socket.io-client';
 
 // ─── Socket Connection ────────────────────────────────────────────────────────
-// In production, set VITE_SERVER_URL to your deployed backend URL (e.g. https://wordle-arena-server.onrender.com)
-// In development, it falls back to localhost:3001
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+// In production (Render), frontend & backend are same origin — no URL needed.
+// In development, falls back to localhost:3001.
+const SERVER_URL = import.meta.env.DEV ? 'http://localhost:3001' : window.location.origin;
 
 const socket = io(SERVER_URL, {
   transports: ['websocket', 'polling'],

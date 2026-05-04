@@ -10,9 +10,11 @@ import { RoundManager } from './game/RoundManager.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// In production, frontend is served from same origin so CORS isn't needed.
+// In dev, allow localhost origins.
 const CORS_ORIGINS = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',')
-  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', '*'];
 
 const app = express();
 const server = createServer(app);
@@ -271,10 +273,15 @@ function endCurrentRound(roomCode) {
   }
 }
 
+// ─── SPA Catch-All (serve index.html for any non-API route) ────────────────────
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, '../client/dist/index.html'));
+});
+
 // ─── Start Server ──────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🎯 Wordle Arena server running on http://localhost:${PORT}`);
   console.log(`   Waiting for players to connect...\n`);
 });

@@ -2,9 +2,8 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(({ mode }) => ({
   root: '.',
-  // For GitHub Pages: set base to '/<repo-name>/' for project pages,
-  // or '/' for user pages (e.g., <username>.github.io)
-  base: mode === 'production' ? '/wordle/' : '/',
+  // Use '/' for single-service deployment (Render), '/wordle/' for GitHub Pages
+  base: '/',
   server: {
     port: 5173,
     proxy: {
