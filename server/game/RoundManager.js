@@ -122,9 +122,9 @@ export class RoundManager {
         const bestStates = [0, 0, 0, 0, 0];
         for (const guess of player.currentGuesses) {
           for (let i = 0; i < 5; i++) {
-            if (guess.result[i] === 'correct') {
+            if (guess.result[i].status === 'correct') {
               bestStates[i] = 2;
-            } else if (guess.result[i] === 'present' && bestStates[i] < 1) {
+            } else if (guess.result[i].status === 'present' && bestStates[i] < 1) {
               bestStates[i] = 1;
             }
           }
@@ -222,9 +222,9 @@ export class RoundManager {
         const bestStates = [0, 0, 0, 0, 0];
         for (const guess of player.currentGuesses) {
           for (let i = 0; i < 5; i++) {
-            if (guess.result[i] === 'correct') {
+            if (guess.result[i].status === 'correct') {
               bestStates[i] = 2;
-            } else if (guess.result[i] === 'present' && bestStates[i] < 1) {
+            } else if (guess.result[i].status === 'present' && bestStates[i] < 1) {
               bestStates[i] = 1;
             }
           }
