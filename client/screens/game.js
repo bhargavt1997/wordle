@@ -8,6 +8,7 @@ let timerInterval = null;
 let roundEndTime = 0;
 let solvedCount = 0;
 let totalPlayers = 0;
+let previousLiveScores = {};
 const keyStates = {};
 
 export function initGame() {
@@ -28,8 +29,23 @@ export function initGame() {
 
   // ── Live Leaderboard ─────────────────────────────────────────────────────
   state.socket.on('live-leaderboard-update', (leaderboardData) => {
+    // Determine deltas before updating previous scores
+    const deltas = [];
+    leaderboardData.forEach(entry => {
+      if (previousLiveScores[entry.playerId] !== undefined) {
+        const diff = entry.liveScore - previousLiveScores[entry.playerId];
+        if (diff > 0) deltas.push({ id: entry.playerId, diff });
+      }
+      previousLiveScores[entry.playerId] = entry.liveScore;
+    });
+
     renderLiveLeaderboard(leaderboardData);
     
+    // Show floating deltas AFTER rendering new DOM
+    setTimeout(() => {
+      deltas.forEach(d => showFloatingDelta(d.id, d.diff));
+    }, 50);
+
     // Update solved count from leaderboard data
     solvedCount = leaderboardData.filter(p => p.solved).length;
     document.getElementById('solved-count').textContent = solvedCount;
@@ -86,6 +102,7 @@ function resetGameState() {
   currentGuess = '';
   solved = false;
   solvedCount = 0;
+  previousLiveScores = {};
   Object.keys(keyStates).forEach(k => delete keyStates[k]);
   buildGrid();
   resetKeyboard();
@@ -264,9 +281,28 @@ function renderLiveLeaderboard(entries) {
         <span class="lb-avatar">${entry.avatar}</span>
         <span class="lb-name" title="${entry.nickname}">${entry.nickname}</span>
       </div>
-      <div class="lb-score">${entry.liveScore}</div>
+      <div class="lb-score" id="score-${entry.playerId}">${entry.liveScore}</div>
     `;
     
     lbList.appendChild(item);
   });
+}
+
+function showFloatingDelta(playerId, delta) {
+  const scoreEl = document.getElementById(`score-${playerId}`);
+  if (!scoreEl) return;
+
+  const rect = scoreEl.getBoundingClientRect();
+  
+  const floater = document.createElement('div');
+  floater.className = 'floating-delta';
+  floater.textContent = `+${delta}`;
+  floater.style.left = `${rect.right - 20}px`; // slightly to the left of the right edge
+  floater.style.top = `${rect.top - 10}px`;
+
+  document.body.appendChild(floater);
+
+  setTimeout(() => {
+    floater.remove();
+  }, 2000);
 }

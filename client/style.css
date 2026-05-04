@@ -212,9 +212,27 @@ body {
 .lb-avatar { font-size: 1.1rem; }
 .lb-name { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.lb-score { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; color: var(--gold); }
+.lb-score { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; color: var(--gold); position: relative; }
 
 @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+/* Floating Delta Animation */
+.floating-delta {
+  position: absolute;
+  color: var(--correct);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.1rem;
+  pointer-events: none;
+  z-index: 1000;
+  animation: floatUpFade 2s ease-out forwards;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+@keyframes floatUpFade {
+  0% { opacity: 0; transform: translateY(10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
 
 /* ═══ Leaderboard Screen ═══ */
 .leaderboard-container { text-align: center; padding: 40px 20px; width: 100%; max-width: 700px; }
