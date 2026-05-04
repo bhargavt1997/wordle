@@ -129,6 +129,35 @@ io.on('connection', (socket) => {
     }
   });
 
+  // ── Restart Game (Same Room) ─────────────────────────────────────────────
+  socket.on('restart-game', (callback) => {
+    try {
+      const roomCode = socket.data.roomCode;
+      const room = roomManager.getRoom(roomCode);
+      if (!room || room.hostId !== socket.id) {
+        return callback({ success: false, error: 'Only the host can restart.' });
+      }
+
+      // Deep reset of room state
+      room.currentRound = 0;
+      room.usedWords = [];
+      room.status = 'playing';
+      
+      for (const [, player] of room.players) {
+        player.scores = [];
+        player.currentGuesses = [];
+        player.solved = false;
+        player.solvedAt = null;
+      }
+
+      startNewRound(roomCode);
+      callback({ success: true });
+    } catch (err) {
+      console.error('Error restarting game:', err);
+      callback({ success: false, error: 'Failed to restart.' });
+    }
+  });
+
   // ── Submit Guess ─────────────────────────────────────────────────────────
   socket.on('submit-guess', ({ guess }, callback) => {
     try {

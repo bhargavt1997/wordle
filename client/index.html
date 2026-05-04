@@ -281,9 +281,15 @@
             </tbody>
           </table>
         </div>
-        <button id="btn-play-again" class="btn btn-primary btn-large">
-          <span>🔄 Play Again</span>
-        </button>
+        <div class="gameover-actions" style="margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+          <button id="btn-play-again" class="btn btn-primary btn-large" style="display:none; width: 100%; justify-content: center;">
+            <span>🔄 Play Again (Same Room)</span>
+          </button>
+          <button id="btn-leave-game" class="btn btn-secondary btn-large" style="width: 100%; justify-content: center;">
+            <span>🚪 Leave Game</span>
+          </button>
+          <p id="gameover-wait" class="waiting-msg" style="display:none; margin-top: 8px;">Waiting for host to restart...</p>
+        </div>
       </div>
     </div>
   </div>

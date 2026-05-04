@@ -2,8 +2,17 @@ import { state, showScreen } from '../main.js';
 import confetti from 'canvas-confetti';
 
 export function initResults() {
-  document.getElementById('btn-play-again').addEventListener('click', () => {
+  document.getElementById('btn-leave-game').addEventListener('click', () => {
     window.location.reload();
+  });
+
+  const btnPlayAgain = document.getElementById('btn-play-again');
+  btnPlayAgain.addEventListener('click', () => {
+    btnPlayAgain.disabled = true;
+    state.socket.emit('restart-game', (res) => {
+      btnPlayAgain.disabled = false;
+      if (!res.success) showToast(res.error, 'error');
+    });
   });
 }
 
@@ -35,6 +44,14 @@ export function showGameOver(data) {
     `;
     tbody.appendChild(tr);
   });
+
+  if (state.isHost) {
+    document.getElementById('btn-play-again').style.display = 'flex';
+    document.getElementById('gameover-wait').style.display = 'none';
+  } else {
+    document.getElementById('btn-play-again').style.display = 'none';
+    document.getElementById('gameover-wait').style.display = 'block';
+  }
 
   showScreen('gameover');
 
