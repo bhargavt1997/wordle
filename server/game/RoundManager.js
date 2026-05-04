@@ -110,30 +110,35 @@ export class RoundManager {
     for (const [playerId, player] of room.players) {
       let guessCount = 0;
       let timeRemainingMs = 0;
-      let maxGreen = 0;
-      let maxYellow = 0;
+      let letterBonus = 0;
 
-      if (player.solved) {
-        guessCount = player.currentGuesses.length;
-        timeRemainingMs = room.roundEndTime - player.solvedAt;
-        maxGreen = 5; // Solved means all 5 are correct
-      } else if (player.currentGuesses.length > 0) {
-        // Find best state for each position if they didn't solve it
+      if (player.currentGuesses.length > 0) {
         const bestStates = [0, 0, 0, 0, 0];
+        
         for (const guess of player.currentGuesses) {
+          const guessTimeRemaining = Math.max(0, Math.floor((room.roundEndTime - guess.timestamp) / 1000));
+          
           for (let i = 0; i < 5; i++) {
-            if (guess.result[i].status === 'correct') {
+            const status = guess.result[i].status;
+            
+            if (status === 'correct' && bestStates[i] < 2) {
+              const basePoints = bestStates[i] === 1 ? 30 : 50; // Diff if already yellow
+              letterBonus += basePoints + (guessTimeRemaining * 2);
               bestStates[i] = 2;
-            } else if (guess.result[i].status === 'present' && bestStates[i] < 1) {
+            } else if (status === 'present' && bestStates[i] < 1) {
+              letterBonus += 20 + (guessTimeRemaining * 1);
               bestStates[i] = 1;
             }
           }
         }
-        maxGreen = bestStates.filter(s => s === 2).length;
-        maxYellow = bestStates.filter(s => s === 1).length;
       }
 
-      const score = ScoringEngine.calculateRoundScore(guessCount, timeRemainingMs, maxGreen, maxYellow);
+      if (player.solved) {
+        guessCount = player.currentGuesses.length;
+        timeRemainingMs = room.roundEndTime - player.solvedAt;
+      }
+
+      const score = ScoringEngine.calculateRoundScore(guessCount, timeRemainingMs, letterBonus);
       score.guessCount = guessCount;
       score.round = room.currentRound;
       score.solved = player.solved;
@@ -210,30 +215,35 @@ export class RoundManager {
 
       // 2. Calculate CURRENT round live score
       let currentRoundScore = 0;
-      let maxGreen = 0;
-      let maxYellow = 0;
+      let letterBonus = 0;
 
-      if (player.solved) {
-        const guessCount = player.currentGuesses.length;
-        const timeRemainingMs = room.roundEndTime - player.solvedAt;
-        const scoreObj = ScoringEngine.calculateRoundScore(guessCount, timeRemainingMs, 5, 0);
-        currentRoundScore = scoreObj.total;
-      } else if (player.currentGuesses.length > 0) {
+      if (player.currentGuesses.length > 0) {
         const bestStates = [0, 0, 0, 0, 0];
         for (const guess of player.currentGuesses) {
+          const guessTimeRemaining = Math.max(0, Math.floor((room.roundEndTime - guess.timestamp) / 1000));
+          
           for (let i = 0; i < 5; i++) {
-            if (guess.result[i].status === 'correct') {
+            const status = guess.result[i].status;
+            if (status === 'correct' && bestStates[i] < 2) {
+              const basePoints = bestStates[i] === 1 ? 30 : 50;
+              letterBonus += basePoints + (guessTimeRemaining * 2);
               bestStates[i] = 2;
-            } else if (guess.result[i].status === 'present' && bestStates[i] < 1) {
+            } else if (status === 'present' && bestStates[i] < 1) {
+              letterBonus += 20 + (guessTimeRemaining * 1);
               bestStates[i] = 1;
             }
           }
         }
-        maxGreen = bestStates.filter(s => s === 2).length;
-        maxYellow = bestStates.filter(s => s === 1).length;
-        
+      }
+
+      if (player.solved) {
+        const guessCount = player.currentGuesses.length;
+        const timeRemainingMs = room.roundEndTime - player.solvedAt;
+        const scoreObj = ScoringEngine.calculateRoundScore(guessCount, timeRemainingMs, letterBonus);
+        currentRoundScore = scoreObj.total;
+      } else if (player.currentGuesses.length > 0) {
         // guessCount = 0 so no base/speed points, just letterBonus
-        const scoreObj = ScoringEngine.calculateRoundScore(0, 0, maxGreen, maxYellow);
+        const scoreObj = ScoringEngine.calculateRoundScore(0, 0, letterBonus);
         currentRoundScore = scoreObj.total;
       }
 
