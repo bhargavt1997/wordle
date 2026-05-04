@@ -85,24 +85,15 @@ cd wordle
 ### 2. Install dependencies
 
 ```bash
-# Install both server and client dependencies
-cd server && npm install
-cd ../client && npm install
-cd ..
+# Installs dependencies for both server and client
+npm run install:all
 ```
 
 ### 3. Start the game
 
-Open **two terminal windows**:
-
 ```bash
-# Terminal 1 — Start the game server
-cd server && npm run dev
-```
-
-```bash
-# Terminal 2 — Start the frontend
-cd client && npm run dev
+# Starts both backend and frontend concurrently
+npm run dev
 ```
 
 ### 4. Play!
@@ -142,7 +133,11 @@ To test multiplayer, open the same URL in multiple browser tabs or share it with
 | 6 | 100 | +50 points per 10 seconds remaining |
 | Failed | 0 | — |
 
-> **Example:** Solving in 2 guesses with 60s remaining = 800 + (6 × 50) = **1100 points**
+**Letter Bonus (Awarded even if you fail!):**
+- **+50 points** for every unique letter found in the correct place (🟩 Green)
+- **+20 points** for every unique letter found in the wrong place (🟨 Yellow)
+
+> **Example:** Solving in 2 guesses with 60s remaining = 800 (base) + 300 (speed) + 250 (5 green letters) = **1350 points**
 
 ---
 
@@ -159,76 +154,43 @@ The Socket.IO + Node.js architecture efficiently handles thousands of concurrent
 
 ---
 
-## 🌐 Deployment Guide
+## 🌐 Deployment Guide (Render)
 
-Since this is a **client-server** app, deployment requires two parts:
-- **Frontend** → GitHub Pages (free, static hosting)
-- **Backend** → Render.com (free tier, runs Node.js)
+Wordle Arena is configured to be deployed as a **single web service** on Render. The Node.js backend builds and serves the Vite frontend automatically.
 
-### Step 1: Deploy Backend to Render
+### Step 1: Create a Web Service
 
-1. Go to [render.com](https://render.com) and sign up (free, no credit card)
-2. Click **"New" → "Web Service"**
-3. Connect your GitHub repository
-4. Configure:
-   | Setting | Value |
-   |---------|-------|
-   | **Name** | `wordle-arena-server` |
-   | **Root Directory** | `server` |
-   | **Runtime** | Node |
-   | **Build Command** | `npm install` |
-   | **Start Command** | `node index.js` |
-   | **Instance Type** | Free |
+1. Go to [render.com](https://render.com) and sign up/sign in with your GitHub account.
+2. Click **"New +" → "Web Service"**.
+3. Select your `wordle` GitHub repository.
 
-5. Add **Environment Variable**:
-   | Key | Value |
-   |-----|-------|
-   | `CORS_ORIGIN` | `https://<your-username>.github.io` |
+### Step 2: Configure Settings
 
-6. Click **"Deploy"** and wait for it to go live
-7. Copy the Render URL (e.g., `https://wordle-arena-server.onrender.com`)
+Fill out the configuration page exactly like this:
 
-### Step 2: Deploy Frontend to GitHub Pages
+| Setting | Value |
+|---------|-------|
+| **Name** | `wordle-arena` (or whatever you prefer) |
+| **Region** | Choose the one closest to you |
+| **Branch** | `main` |
+| **Root Directory** | *(Leave completely blank)* |
+| **Runtime** | `Node` |
+| **Build Command** | `npm run build` |
+| **Start Command** | `npm start` |
 
-1. Go to your GitHub repository → **Settings → Pages**
-2. Under **Source**, select **"GitHub Actions"**
-3. Go to **Settings → Variables and secrets → Actions → Variables**
-4. Add a **Repository Variable**:
-   | Name | Value |
-   |------|-------|
-   | `VITE_SERVER_URL` | `https://wordle-arena-server.onrender.com` |
+### Step 3: Deploy
 
-5. Push to `main` branch — the GitHub Action will automatically build and deploy!
+1. Scroll down to "Instance Type" and ensure **Free** ($0/month) is selected.
+2. Click **"Deploy Web Service"**.
 
-> **Note:** If your repo name is not `wordle`, update the `base` in `client/vite.config.js`:
-> ```js
-> base: mode === 'production' ? '/<your-repo-name>/' : '/',
-> ```
-
-### Step 3: Play! 🎉
-
-Your game will be live at:
-```
-https://<your-username>.github.io/wordle/
-```
-
-Share this URL with friends. Create a room, share the code, and compete!
+Render will automatically download your code, install dependencies, build the frontend, and start the server. Within a few minutes, your game will be live at a URL like `https://wordle-arena-xxxx.onrender.com`.
 
 ---
 
 ## ⚠️ Important Notes
 
 ### Render Free Tier Cold Starts
-Render's free tier spins down after 15 minutes of inactivity. The first connection may take **30-50 seconds** to wake up. After that, it runs normally. For always-on service, upgrade to Render's paid tier ($7/month).
-
-### GitHub Pages Base Path
-If your repository is named something other than `wordle`, update the `base` path in `client/vite.config.js` to match your repo name.
-
-### Custom Domain (Optional)
-To use a custom domain with GitHub Pages:
-1. Add a `CNAME` file in `client/public/` with your domain
-2. Update the `base` in `vite.config.js` to `'/'`
-3. Configure DNS records as per [GitHub Pages docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site)
+Render's free tier spins down after 15 minutes of inactivity. The first connection after it sleeps may take **30-50 seconds** to wake up. After that, it runs normally for everyone. For always-on service, upgrade to Render's paid tier.
 
 ---
 
@@ -257,25 +219,21 @@ To use a custom domain with GitHub Pages:
 
 ---
 
-## 🧪 Development
+## 🧪 Development & Building
 
 ### Running in Development Mode
 
 ```bash
-# Server (auto-restarts on file changes)
-cd server && npm run dev
-
-# Client (hot module replacement)
-cd client && npm run dev
+# Starts both frontend and backend concurrently with hot-reloading
+npm run dev
 ```
 
 ### Building for Production
 
 ```bash
-cd client && VITE_SERVER_URL=https://your-server.onrender.com npm run build
+# Installs all dependencies and builds the Vite frontend into /client/dist
+npm run build
 ```
-
-The production build outputs to `client/dist/`.
 
 ---
 
