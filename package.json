@@ -1,0 +1,12 @@
+{
+  "name": "wordle-arena",
+  "version": "1.0.0",
+  "description": "Multiplayer Wordle Arena - Real-time competitive word game",
+  "private": true,
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "dev": "npm run dev:server & npm run dev:client"
+  }
+}

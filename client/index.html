@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wordle Arena — Multiplayer Word Game</title>
+  <meta name="description" content="Play Wordle with 100+ friends in real-time! Compete across multiple rounds, climb the leaderboard, and prove your word skills." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='80'>🎯</text></svg>" />
+</head>
+<body>
+  <div id="app">
+    <!-- Toast notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Lobby Screen -->
+    <div id="screen-lobby" class="screen active">
+      <div class="lobby-container">
+        <div class="logo-section">
+          <h1 class="logo">
+            <span class="logo-letter" style="--delay:0">W</span>
+            <span class="logo-letter" style="--delay:1">O</span>
+            <span class="logo-letter" style="--delay:2">R</span>
+            <span class="logo-letter" style="--delay:3">D</span>
+            <span class="logo-letter" style="--delay:4">L</span>
+            <span class="logo-letter" style="--delay:5">E</span>
+          </h1>
+          <h2 class="logo-subtitle">A R E N A</h2>
+          <p class="logo-tagline">Compete. Guess. Conquer.</p>
+        </div>
+
+        <div class="lobby-cards">
+          <!-- Create Room Card -->
+          <div class="glass-card lobby-card" id="create-card">
+            <div class="card-icon">🏟️</div>
+            <h3>Create Arena</h3>
+            <p>Host a game and invite friends</p>
+            <div class="form-group">
+              <label for="create-nickname">Your Name</label>
+              <input type="text" id="create-nickname" placeholder="Enter nickname" maxlength="15" autocomplete="off" />
+            </div>
+            <div class="form-row">
+              <div class="form-group small">
+                <label for="rounds-select">Rounds</label>
+                <select id="rounds-select">
+                  <option value="3">3</option>
+                  <option value="5" selected>5</option>
+                  <option value="7">7</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+              <div class="form-group small">
+                <label for="duration-select">Timer (s)</label>
+                <select id="duration-select">
+                  <option value="60">60</option>
+                  <option value="90" selected>90</option>
+                  <option value="120">120</option>
+                  <option value="180">180</option>
+                </select>
+              </div>
+            </div>
+            <button id="btn-create" class="btn btn-primary">
+              <span>Create Room</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <!-- Join Room Card -->
+          <div class="glass-card lobby-card" id="join-card">
+            <div class="card-icon">🎮</div>
+            <h3>Join Arena</h3>
+            <p>Enter a room code to join</p>
+            <div class="form-group">
+              <label for="join-nickname">Your Name</label>
+              <input type="text" id="join-nickname" placeholder="Enter nickname" maxlength="15" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label for="room-code">Room Code</label>
+              <input type="text" id="room-code" placeholder="Enter 6-digit code" maxlength="6" autocomplete="off" style="text-transform: uppercase; letter-spacing: 4px; text-align: center; font-weight: 700;" />
+            </div>
+            <button id="btn-join" class="btn btn-secondary">
+              <span>Join Room</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Waiting Room Screen -->
+    <div id="screen-waiting" class="screen">
+      <div class="waiting-container">
+        <div class="waiting-header">
+          <h2>🏟️ Arena Lobby</h2>
+          <div class="room-code-display">
+            <span class="room-code-label">Room Code</span>
+            <span class="room-code-value" id="display-room-code">------</span>
+            <button class="btn-copy" id="btn-copy-code" title="Copy code">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="waiting-info glass-card">
+          <div class="info-item">
+            <span class="info-label">Rounds</span>
+            <span class="info-value" id="info-rounds">5</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Timer</span>
+            <span class="info-value" id="info-timer">90s</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Players</span>
+            <span class="info-value" id="info-players">1</span>
+          </div>
+        </div>
+
+        <div class="players-grid" id="players-grid">
+          <!-- Dynamically populated -->
+        </div>
+
+        <button id="btn-start-game" class="btn btn-primary btn-large" style="display:none;">
+          <span>🚀 Start Game</span>
+        </button>
+        <p id="waiting-message" class="waiting-msg">Waiting for host to start the game...</p>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="screen-game" class="screen">
+      <div class="game-container">
+        <!-- Game Header -->
+        <div class="game-header">
+          <div class="round-info">
+            <span class="round-badge" id="round-badge">Round 1/5</span>
+          </div>
+          <div class="timer-display" id="timer-display">
+            <svg class="timer-ring" width="52" height="52">
+              <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+              <circle id="timer-ring-progress" cx="26" cy="26" r="22" fill="none" stroke="url(#timerGradient)" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="0" transform="rotate(-90 26 26)"/>
+              <defs>
+                <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#10b981"/>
+                  <stop offset="100%" style="stop-color:#06d6a0"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="timer-text" id="timer-text">90</span>
+          </div>
+          <div class="players-online">
+            <span id="solved-count">0</span>/<span id="total-players">1</span> solved
+          </div>
+        </div>
+
+        <!-- Guess Grid -->
+        <div class="grid-container">
+          <div class="guess-grid" id="guess-grid">
+            <!-- 6 rows x 5 tiles -->
+          </div>
+        </div>
+
+        <!-- Keyboard -->
+        <div class="keyboard" id="keyboard">
+          <div class="keyboard-row">
+            <button class="key" data-key="q">Q</button>
+            <button class="key" data-key="w">W</button>
+            <button class="key" data-key="e">E</button>
+            <button class="key" data-key="r">R</button>
+            <button class="key" data-key="t">T</button>
+            <button class="key" data-key="y">Y</button>
+            <button class="key" data-key="u">U</button>
+            <button class="key" data-key="i">I</button>
+            <button class="key" data-key="o">O</button>
+            <button class="key" data-key="p">P</button>
+          </div>
+          <div class="keyboard-row">
+            <div class="spacer-half"></div>
+            <button class="key" data-key="a">A</button>
+            <button class="key" data-key="s">S</button>
+            <button class="key" data-key="d">D</button>
+            <button class="key" data-key="f">F</button>
+            <button class="key" data-key="g">G</button>
+            <button class="key" data-key="h">H</button>
+            <button class="key" data-key="j">J</button>
+            <button class="key" data-key="k">K</button>
+            <button class="key" data-key="l">L</button>
+            <div class="spacer-half"></div>
+          </div>
+          <div class="keyboard-row">
+            <button class="key key-wide" data-key="Enter">ENTER</button>
+            <button class="key" data-key="z">Z</button>
+            <button class="key" data-key="x">X</button>
+            <button class="key" data-key="c">C</button>
+            <button class="key" data-key="v">V</button>
+            <button class="key" data-key="b">B</button>
+            <button class="key" data-key="n">N</button>
+            <button class="key" data-key="m">M</button>
+            <button class="key key-wide" data-key="Backspace">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Feed Sidebar -->
+        <div class="live-feed glass-card" id="live-feed">
+          <h4>🔴 Live</h4>
+          <div class="feed-list" id="feed-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard Screen (between rounds) -->
+    <div id="screen-leaderboard" class="screen">
+      <div class="leaderboard-container">
+        <div class="leaderboard-header">
+          <h2 id="leaderboard-title">Round 1 Results</h2>
+          <div class="word-reveal">
+            <span>The word was</span>
+            <span class="revealed-word" id="revealed-word">CRANE</span>
+          </div>
+        </div>
+
+        <!-- Podium for top 3 -->
+        <div class="podium" id="podium">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Full leaderboard table -->
+        <div class="leaderboard-table-wrapper glass-card">
+          <table class="leaderboard-table" id="leaderboard-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Guesses</th>
+                <th>Round Pts</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="leaderboard-actions">
+          <button id="btn-next-round" class="btn btn-primary btn-large" style="display:none;">
+            <span>⚡ Next Round</span>
+          </button>
+          <p id="next-round-wait" class="waiting-msg">Waiting for host to start next round...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="screen-gameover" class="screen">
+      <div class="gameover-container">
+        <h2 class="gameover-title">🏆 Game Over!</h2>
+        <div class="winner-card glass-card" id="winner-card">
+          <!-- Dynamically populated -->
+        </div>
+        <div class="final-standings glass-card">
+          <h3>Final Standings</h3>
+          <table class="leaderboard-table" id="final-leaderboard-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Solved</th>
+                <th>Avg Guesses</th>
+                <th>Total Score</th>
+              </tr>
+            </thead>
+            <tbody id="final-leaderboard-body">
+            </tbody>
+          </table>
+        </div>
+        <button id="btn-play-again" class="btn btn-primary btn-large">
+          <span>🔄 Play Again</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
