@@ -110,13 +110,30 @@ export class RoundManager {
     for (const [playerId, player] of room.players) {
       let guessCount = 0;
       let timeRemainingMs = 0;
+      let maxGreen = 0;
+      let maxYellow = 0;
 
       if (player.solved) {
         guessCount = player.currentGuesses.length;
         timeRemainingMs = room.roundEndTime - player.solvedAt;
+        maxGreen = 5; // Solved means all 5 are correct
+      } else if (player.currentGuesses.length > 0) {
+        // Find best state for each position if they didn't solve it
+        const bestStates = [0, 0, 0, 0, 0];
+        for (const guess of player.currentGuesses) {
+          for (let i = 0; i < 5; i++) {
+            if (guess.result[i] === 'correct') {
+              bestStates[i] = 2;
+            } else if (guess.result[i] === 'present' && bestStates[i] < 1) {
+              bestStates[i] = 1;
+            }
+          }
+        }
+        maxGreen = bestStates.filter(s => s === 2).length;
+        maxYellow = bestStates.filter(s => s === 1).length;
       }
 
-      const score = ScoringEngine.calculateRoundScore(guessCount, timeRemainingMs);
+      const score = ScoringEngine.calculateRoundScore(guessCount, timeRemainingMs, maxGreen, maxYellow);
       score.guessCount = guessCount;
       score.round = room.currentRound;
       score.solved = player.solved;

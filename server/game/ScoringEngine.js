@@ -16,21 +16,27 @@ export class ScoringEngine {
    * Calculate score for a single round
    * @param {number} guessCount - number of guesses used (1-6), 0 = failed
    * @param {number} timeRemainingMs - milliseconds remaining on timer
-   * @returns {{ base: number, speedBonus: number, total: number }}
+   * @param {number} maxGreen - highest number of unique green letters found
+   * @param {number} maxYellow - highest number of unique yellow letters found
+   * @returns {{ base: number, speedBonus: number, letterBonus: number, total: number }}
    */
-  static calculateRoundScore(guessCount, timeRemainingMs) {
-    if (guessCount === 0 || guessCount > 6) {
-      return { base: 0, speedBonus: 0, total: 0 };
+  static calculateRoundScore(guessCount, timeRemainingMs, maxGreen = 0, maxYellow = 0) {
+    let base = 0;
+    let speedBonus = 0;
+
+    if (guessCount > 0 && guessCount <= 6) {
+      base = ScoringEngine.GUESS_POINTS[guessCount] || 0;
+      const secondsRemaining = Math.max(0, Math.floor(timeRemainingMs / 1000));
+      speedBonus = Math.floor(secondsRemaining / 10) * ScoringEngine.SPEED_BONUS_PER_10S;
     }
 
-    const base = ScoringEngine.GUESS_POINTS[guessCount] || 0;
-    const secondsRemaining = Math.max(0, Math.floor(timeRemainingMs / 1000));
-    const speedBonus = Math.floor(secondsRemaining / 10) * ScoringEngine.SPEED_BONUS_PER_10S;
+    const letterBonus = (maxGreen * 50) + (maxYellow * 20);
 
     return {
-      base,
+      base: base + letterBonus,
       speedBonus,
-      total: base + speedBonus
+      letterBonus,
+      total: base + speedBonus + letterBonus
     };
   }
 
