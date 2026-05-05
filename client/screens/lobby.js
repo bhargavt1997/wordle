@@ -23,8 +23,8 @@ export function initLobby() {
   if (btnSolo) {
     btnSolo.addEventListener('click', () => {
       const nickname = document.getElementById('solo-nickname').value.trim() || 'Solo Player';
-      const rounds = 5;
-      const roundDuration = 90;
+      const rounds = parseInt(document.getElementById('solo-rounds-select').value) || 5;
+      const roundDuration = parseInt(document.getElementById('solo-duration-select').value) || 90;
       const maxPlayers = 1;
 
       btnSolo.disabled = true;

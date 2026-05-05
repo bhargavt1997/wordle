@@ -25,6 +25,9 @@ export function initGame() {
     roundEndTime = Date.now() + (data.duration * 1000);
     startTimer(data.duration);
     showScreen('game');
+
+    // Show cancel button if host
+    document.getElementById('btn-cancel-game').style.display = state.isHost ? 'flex' : 'none';
   });
 
   // ── Live Leaderboard ─────────────────────────────────────────────────────
@@ -76,6 +79,39 @@ export function initGame() {
   state.socket.on('player-left', (data) => {
     totalPlayers = data.playerCount;
     document.getElementById('total-players').textContent = totalPlayers;
+  });
+
+  // ── Cancel Game ──────────────────────────────────────────────────────────
+  const btnCancel = document.getElementById('btn-cancel-game');
+  const modalCancel = document.getElementById('modal-cancel-confirm');
+  const btnConfirmCancel = document.getElementById('btn-confirm-cancel');
+  const btnCancelCancel = document.getElementById('btn-cancel-cancel');
+  const btnCloseCancel = document.getElementById('btn-close-cancel-modal');
+
+  if (btnCancel) btnCancel.addEventListener('click', () => modalCancel.classList.add('active'));
+  if (btnCloseCancel) btnCloseCancel.addEventListener('click', () => modalCancel.classList.remove('active'));
+  if (btnCancelCancel) btnCancelCancel.addEventListener('click', () => modalCancel.classList.remove('active'));
+  if (modalCancel) modalCancel.addEventListener('click', (e) => {
+    if (e.target === modalCancel) modalCancel.classList.remove('active');
+  });
+
+  if (btnConfirmCancel) {
+    btnConfirmCancel.addEventListener('click', () => {
+      btnConfirmCancel.disabled = true;
+      state.socket.emit('cancel-game', (res) => {
+        btnConfirmCancel.disabled = false;
+        if (res && !res.success) showToast(res.error, 'error');
+        modalCancel.classList.remove('active');
+      });
+    });
+  }
+
+  state.socket.on('game-cancelled', () => {
+    stopTimer();
+    showToast('Host cancelled the game.', 'error');
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   });
 }
 

@@ -159,6 +159,27 @@ io.on('connection', (socket) => {
     }
   });
 
+  // ── Cancel Game (host only) ──────────────────────────────────────────────
+  socket.on('cancel-game', (callback) => {
+    try {
+      const roomCode = socket.data.roomCode;
+      const room = roomManager.getRoom(roomCode);
+      if (!room || room.hostId !== socket.id) {
+        return callback({ success: false, error: 'Only the host can cancel the game.' });
+      }
+
+      room.status = 'finished';
+      // Clear any running round timer
+      roundManager.clearTimer(roomCode);
+      io.to(roomCode).emit('game-cancelled');
+      
+      callback({ success: true });
+    } catch (err) {
+      console.error('Error cancelling game:', err);
+      callback({ success: false, error: 'Failed to cancel game.' });
+    }
+  });
+
   // ── Submit Guess ─────────────────────────────────────────────────────────
   socket.on('submit-guess', ({ guess }, callback) => {
     try {
