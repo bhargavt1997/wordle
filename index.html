@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='80'>🎯</text></svg>" />
-  <script type="module" crossorigin src="/assets/index-DofTX4mw.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DPXWHh26.css">
+  <script type="module" crossorigin src="/assets/index-B-UP3p9y.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BANJyiSH.css">
 </head>
 <body>
   <div id="app">
@@ -106,9 +106,29 @@
             <div class="card-icon">🎯</div>
             <h3>Solo Practice</h3>
             <p>Train your skills against the clock</p>
-            <div class="form-group" style="margin-bottom: auto;">
+            <div class="form-group">
               <label for="solo-nickname">Your Name</label>
               <input type="text" id="solo-nickname" placeholder="Enter nickname" maxlength="15" autocomplete="off" />
+            </div>
+            <div class="form-row" style="margin-bottom: auto;">
+              <div class="form-group small">
+                <label for="solo-rounds-select">Rounds</label>
+                <select id="solo-rounds-select">
+                  <option value="3">3</option>
+                  <option value="5" selected>5</option>
+                  <option value="7">7</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+              <div class="form-group small">
+                <label for="solo-duration-select">Timer (s)</label>
+                <select id="solo-duration-select">
+                  <option value="60">60</option>
+                  <option value="90" selected>90</option>
+                  <option value="120">120</option>
+                  <option value="180">180</option>
+                </select>
+              </div>
             </div>
             <button id="btn-solo" class="btn btn-primary" style="margin-top: 16px;">
               <span>Start Solo Game</span>
@@ -164,7 +184,8 @@
       <div class="game-container">
         <!-- Game Header -->
         <div class="game-header">
-          <div class="round-info">
+          <button id="btn-cancel-game" class="btn-cancel-game" style="display:none;" title="Cancel Game">✖</button>
+          <div class="round-info" style="margin-right: auto;">
             <span class="round-badge" id="round-badge">Round 1/5</span>
           </div>
           <div class="timer-display" id="timer-display">
@@ -345,6 +366,18 @@
               <li><strong>Discovery Bonus 🔍:</strong> Finding Green and Yellow letters early gives you extra points instantly, even if you don't solve the word yet!</li>
             </ul>
           </div>
+        </div>
+      </div>
+    </div>
+    <!-- Cancel Game Confirm Modal -->
+    <div id="modal-cancel-confirm" class="modal">
+      <div class="modal-content glass-card" style="text-align: center;">
+        <button id="btn-close-cancel-modal" class="btn-close-modal">&times;</button>
+        <h2>⚠️ Cancel Game?</h2>
+        <p style="margin-bottom: 24px; color: var(--text-primary);">Are you sure you want to end this game? All players will be kicked back to the main menu.</p>
+        <div style="display: flex; gap: 16px; justify-content: center;">
+          <button id="btn-confirm-cancel" class="btn btn-primary" style="background: var(--danger); box-shadow: 0 4px 20px rgba(239,68,68,0.3);">Yes, Cancel Game</button>
+          <button id="btn-cancel-cancel" class="btn btn-secondary" style="background: rgba(255,255,255,0.1); box-shadow: none;">No, Resume</button>
         </div>
       </div>
     </div>
