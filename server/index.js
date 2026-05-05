@@ -46,11 +46,12 @@ io.on('connection', (socket) => {
   console.log(`🔌 Player connected: ${socket.id}`);
 
   // ── Create Room ──────────────────────────────────────────────────────────
-  socket.on('create-room', ({ nickname, rounds, roundDuration }, callback) => {
+  socket.on('create-room', ({ nickname, rounds, roundDuration, maxPlayers }, callback) => {
     try {
       const room = roomManager.createRoom(socket.id, nickname, {
         rounds: rounds || 5,
-        roundDuration: roundDuration || 90
+        roundDuration: roundDuration || 90,
+        maxPlayers: maxPlayers || 200
       });
 
       socket.join(room.code);
@@ -92,7 +93,7 @@ io.on('connection', (socket) => {
         nickname,
         avatar: room.players.get(socket.id).avatar,
         players,
-        playerCount: room.players.size
+        playerCount: Array.from(room.players.values()).filter(p => p.connected).length
       });
 
       console.log(`👤 ${nickname} joined room ${room.code} (${room.players.size} players)`);
@@ -232,13 +233,13 @@ io.on('connection', (socket) => {
     if (roomCode) {
       const room = roomManager.getRoom(roomCode);
       if (room) {
-        const deleted = roomManager.leaveRoom(roomCode, socket.id);
-        if (!deleted) {
+        const result = roomManager.disconnectPlayer(socket.id);
+        if (result) {
           const players = roomManager.getPlayerList(room);
           io.to(roomCode).emit('player-left', {
             nickname: socket.data.nickname,
             players,
-            playerCount: room.players.size,
+            playerCount: Array.from(room.players.values()).filter(p => p.connected).length,
             newHostId: room.hostId
           });
 

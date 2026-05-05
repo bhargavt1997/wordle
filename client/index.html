@@ -30,6 +30,9 @@
           </h1>
           <h2 class="logo-subtitle">A R E N A</h2>
           <p class="logo-tagline">Compete. Guess. Conquer.</p>
+          <button id="btn-how-to-play" class="btn btn-secondary" style="margin-top: 16px; font-size: 0.9rem; padding: 8px 16px;">
+            📖 How to Play & Scoring
+          </button>
         </div>
 
         <div class="lobby-cards">
@@ -62,6 +65,16 @@
                 </select>
               </div>
             </div>
+            <div class="form-group">
+              <label for="max-players-select">Max Players</label>
+              <select id="max-players-select">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200" selected>200</option>
+              </select>
+            </div>
             <button id="btn-create" class="btn btn-primary">
               <span>Create Room</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -84,6 +97,21 @@
             <button id="btn-join" class="btn btn-secondary">
               <span>Join Room</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+            </button>
+          </div>
+
+          <!-- Solo Practice Card -->
+          <div class="glass-card lobby-card" id="solo-card">
+            <div class="card-icon">🎯</div>
+            <h3>Solo Practice</h3>
+            <p>Train your skills against the clock</p>
+            <div class="form-group" style="margin-bottom: auto;">
+              <label for="solo-nickname">Your Name</label>
+              <input type="text" id="solo-nickname" placeholder="Enter nickname" maxlength="15" autocomplete="off" />
+            </div>
+            <button id="btn-solo" class="btn btn-primary" style="margin-top: 16px;">
+              <span>Start Solo Game</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>
@@ -289,6 +317,33 @@
             <span>🔙 Main Menu</span>
           </button>
           <p id="gameover-wait" class="waiting-msg" style="display:none; margin-top: 8px;">Waiting for host to restart...</p>
+        </div>
+      </div>
+    </div>
+    <!-- How to Play Modal -->
+    <div id="modal-how-to-play" class="modal">
+      <div class="modal-content glass-card">
+        <button id="btn-close-modal" class="btn-close-modal">&times;</button>
+        <h2>📖 How to Play</h2>
+        <div class="rules-list">
+          <div class="rule-section">
+            <h3>Objective</h3>
+            <p>Guess the hidden 5-letter word in 6 tries or less.</p>
+          </div>
+          <div class="rule-section">
+            <h3>Tile Colors</h3>
+            <div class="color-example"><span class="key" style="background:var(--correct);border-color:var(--correct);color:#fff">W</span> <strong>Correct</strong> - Right letter, right spot.</div>
+            <div class="color-example"><span class="key" style="background:var(--present);border-color:var(--present);color:#fff">O</span> <strong>Present</strong> - Right letter, wrong spot.</div>
+            <div class="color-example"><span class="key" style="background:var(--absent);border-color:var(--absent);color:#fff">R</span> <strong>Absent</strong> - Letter not in word.</div>
+          </div>
+          <div class="rule-section">
+            <h3>🏆 Scoring System</h3>
+            <ul>
+              <li><strong>Fewer Guesses = More Points:</strong> Base points range from 1,000 (1st guess) to 100 (6th guess).</li>
+              <li><strong>Speed Bonus ⏱️:</strong> Earn 50 points for every 10 full seconds remaining when you solve it!</li>
+              <li><strong>Discovery Bonus 🔍:</strong> Finding Green and Yellow letters early gives you extra points instantly, even if you don't solve the word yet!</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

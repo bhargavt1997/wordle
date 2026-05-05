@@ -5,6 +5,50 @@ export function initLobby() {
   const btnJoin = document.getElementById('btn-join');
   const btnCopyCode = document.getElementById('btn-copy-code');
   const btnStartGame = document.getElementById('btn-start-game');
+  const btnHowToPlay = document.getElementById('btn-how-to-play');
+  const btnSolo = document.getElementById('btn-solo');
+  const modalHowToPlay = document.getElementById('modal-how-to-play');
+  const btnCloseModal = document.getElementById('btn-close-modal');
+
+  // ── How to Play Modal ────────────────────────────────────────────────────
+  if (btnHowToPlay && modalHowToPlay) {
+    btnHowToPlay.addEventListener('click', () => modalHowToPlay.classList.add('active'));
+    btnCloseModal.addEventListener('click', () => modalHowToPlay.classList.remove('active'));
+    modalHowToPlay.addEventListener('click', (e) => {
+      if (e.target === modalHowToPlay) modalHowToPlay.classList.remove('active');
+    });
+  }
+
+  // ── Solo Practice ────────────────────────────────────────────────────────
+  if (btnSolo) {
+    btnSolo.addEventListener('click', () => {
+      const nickname = document.getElementById('solo-nickname').value.trim() || 'Solo Player';
+      const rounds = 5;
+      const roundDuration = 90;
+      const maxPlayers = 1;
+
+      btnSolo.disabled = true;
+      state.socket.emit('create-room', { nickname, rounds, roundDuration, maxPlayers }, (res) => {
+        btnSolo.disabled = false;
+        if (!res.success) return showToast(res.error, 'error');
+
+        state.roomCode = res.roomCode;
+        state.nickname = nickname;
+        state.isHost = true;
+        state.totalRounds = res.settings.rounds;
+        state.roundDuration = res.settings.roundDuration;
+
+        // Automatically start the game for solo play
+        state.socket.emit('start-game', (startRes) => {
+          if (!startRes.success) showToast(startRes.error, 'error');
+        });
+      });
+    });
+
+    document.getElementById('solo-nickname').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnSolo.click();
+    });
+  }
 
   // ── Create Room ──────────────────────────────────────────────────────────
   btnCreate.addEventListener('click', () => {
@@ -13,9 +57,10 @@ export function initLobby() {
 
     const rounds = parseInt(document.getElementById('rounds-select').value);
     const roundDuration = parseInt(document.getElementById('duration-select').value);
+    const maxPlayers = parseInt(document.getElementById('max-players-select').value);
 
     btnCreate.disabled = true;
-    state.socket.emit('create-room', { nickname, rounds, roundDuration }, (res) => {
+    state.socket.emit('create-room', { nickname, rounds, roundDuration, maxPlayers }, (res) => {
       btnCreate.disabled = false;
       if (!res.success) return showToast(res.error, 'error');
 

@@ -66,15 +66,25 @@ export class RoomManager {
     if (room.status === 'finished') {
       return { success: false, error: 'This game has already ended.' };
     }
-    if (room.players.size >= room.settings.maxPlayers) {
-      return { success: false, error: 'Room is full.' };
-    }
-
-    // Check for duplicate nicknames
-    for (const [, p] of room.players) {
+    // Check for rejoining player or duplicate nicknames
+    for (const [existingId, p] of room.players) {
       if (p.nickname.toLowerCase() === nickname.toLowerCase()) {
+        if (!p.connected) {
+          // Reclaim disconnected player slot
+          p.connected = true;
+          room.players.set(playerId, p);
+          room.players.delete(existingId);
+          if (room.hostId === existingId) {
+            room.hostId = playerId;
+          }
+          return { success: true, room };
+        }
         return { success: false, error: 'Nickname already taken in this room.' };
       }
+    }
+
+    if (room.players.size >= room.settings.maxPlayers) {
+      return { success: false, error: 'Room is full.' };
     }
 
     room.players.set(playerId, {
@@ -117,6 +127,17 @@ export class RoomManager {
       if (room.players.has(playerId)) {
         const player = room.players.get(playerId);
         player.connected = false;
+
+        // If host disconnected, assign new host among connected players
+        if (room.hostId === playerId) {
+          for (const [id, p] of room.players) {
+            if (p.connected) {
+              room.hostId = id;
+              break;
+            }
+          }
+        }
+        
         return { roomCode: code, room };
       }
     }
